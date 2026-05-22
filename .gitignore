@@ -1,0 +1,19 @@
+# Visual Studio
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET
+[Tt]est[]esults/
+nupkg/
+
+# IDE
+.idea/
+.vscode/
+
+# Project Specific
+.claude/

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ダークテーマに合わせて Android のシステムカラーも落ち着いた色に揃える -->
+    <color name="colorPrimary">#0A192F</color>
+    <color name="colorPrimaryDark">#0A192F</color>
+    <color name="colorAccent">#7FB8B2</color>
+</resources>

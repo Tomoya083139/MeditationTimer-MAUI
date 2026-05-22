@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ===================================================================
+         Meditation App - Color Palette
+         深海ネイビー(#0A192F) と 深い森のモスグリーン(#1B271F) を基調にした、
+         彩度の低い落ち着いたアースカラーのダークテーマ。
+         =================================================================== -->
+
+    <!-- Background layers -->
+    <Color x:Key="BgDeepNavy">#0A192F</Color>
+    <Color x:Key="BgNavy">#112240</Color>
+    <Color x:Key="BgMoss">#1B271F</Color>
+    <Color x:Key="BgSurface">#16243D</Color>
+    <Color x:Key="BgElevated">#1D2F4E</Color>
+
+    <!-- Accent -->
+    <Color x:Key="Accent">#7FB8B2</Color>
+    <Color x:Key="AccentDim">#4C7E79</Color>
+    <Color x:Key="AccentDeep">#2F4F4A</Color>
+    <Color x:Key="AccentWarm">#C9A66B</Color>
+
+    <!-- Text -->
+    <Color x:Key="TextPrimary">#E6E8E6</Color>
+    <Color x:Key="TextSecondary">#A3B1C2</Color>
+    <Color x:Key="TextMuted">#6B7A8F</Color>
+    <Color x:Key="TextOnAccent">#0A192F</Color>
+
+    <!-- Borders / Dividers -->
+    <Color x:Key="Divider">#1F2F45</Color>
+    <Color x:Key="DividerSoft">#2A3B52</Color>
+
+    <!-- Legacy keys kept for backwards compatibility with default templates -->
+    <Color x:Key="Primary">#7FB8B2</Color>
+    <Color x:Key="PrimaryDark">#4C7E79</Color>
+    <Color x:Key="PrimaryDarkText">#E6E8E6</Color>
+    <Color x:Key="Secondary">#1D2F4E</Color>
+    <Color x:Key="SecondaryDarkText">#A3B1C2</Color>
+    <Color x:Key="Tertiary">#C9A66B</Color>
+
+    <Color x:Key="White">#E6E8E6</Color>
+    <Color x:Key="Black">#0A192F</Color>
+    <Color x:Key="Magenta">#7FB8B2</Color>
+    <Color x:Key="MidnightBlue">#0A192F</Color>
+    <Color x:Key="OffBlack">#0A192F</Color>
+
+    <Color x:Key="Gray100">#E6E8E6</Color>
+    <Color x:Key="Gray200">#A3B1C2</Color>
+    <Color x:Key="Gray300">#6B7A8F</Color>
+    <Color x:Key="Gray400">#4A5874</Color>
+    <Color x:Key="Gray500">#2A3B52</Color>
+    <Color x:Key="Gray600">#1F2F45</Color>
+    <Color x:Key="Gray900">#112240</Color>
+    <Color x:Key="Gray950">#0A192F</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="BgDeepNavyBrush" Color="{StaticResource BgDeepNavy}"/>
+    <SolidColorBrush x:Key="BgNavyBrush" Color="{StaticResource BgNavy}"/>
+    <SolidColorBrush x:Key="BgMossBrush" Color="{StaticResource BgMoss}"/>
+    <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurface}"/>
+    <SolidColorBrush x:Key="BgElevatedBrush" Color="{StaticResource BgElevated}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"/>
+    <SolidColorBrush x:Key="AccentDimBrush" Color="{StaticResource AccentDim}"/>
+    <SolidColorBrush x:Key="AccentDeepBrush" Color="{StaticResource AccentDeep}"/>
+    <SolidColorBrush x:Key="AccentWarmBrush" Color="{StaticResource AccentWarm}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource Divider}"/>
+
+    <!-- Legacy brushes -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
+    <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
+    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+    <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
+    <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
+    <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>
+    <SolidColorBrush x:Key="Gray400Brush" Color="{StaticResource Gray400}"/>
+    <SolidColorBrush x:Key="Gray500Brush" Color="{StaticResource Gray500}"/>
+    <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
+    <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
+    <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+</ResourceDictionary>

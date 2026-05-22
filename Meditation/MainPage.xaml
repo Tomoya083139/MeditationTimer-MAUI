@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Meditation.ViewModels"
+             xmlns:models="clr-namespace:Meditation.Models"
+             x:Class="Meditation.MainPage"
+             x:Name="PageRoot"
+             x:DataType="vm:MainViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource BgDeepNavy}">
+
+    <!-- ScrollView でラップして、クラシックリスト展開時もタイマーが見えるようにする -->
+    <ScrollView VerticalScrollBarVisibility="Default">
+        <Grid RowDefinitions="Auto, Auto, Auto, Auto"
+              Padding="24,32,24,24"
+              RowSpacing="24">
+
+            <!-- ===== 上部: アプリタイトル ===== -->
+            <VerticalStackLayout Grid.Row="0" Spacing="6" HorizontalOptions="Center">
+                <Label Text="MEDITATION"
+                       Style="{StaticResource SectionCaption}"
+                       HorizontalOptions="Center"
+                       TextColor="{StaticResource Accent}" />
+                <Label Text="静かな時間へ"
+                       Style="{StaticResource SubHeadline}"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- ===== 中央: タイマー表示 ===== -->
+            <Grid Grid.Row="1">
+                <Ellipse
+                    WidthRequest="300"
+                    HeightRequest="300"
+                    Stroke="{StaticResource DividerSoft}"
+                    StrokeThickness="1"
+                    Fill="{StaticResource BgSurface}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Opacity="0.55" />
+
+                <Ellipse
+                    WidthRequest="240"
+                    HeightRequest="240"
+                    Stroke="{StaticResource AccentDim}"
+                    StrokeThickness="1"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Opacity="0.35" />
+
+                <VerticalStackLayout
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Spacing="6">
+
+                    <Label Text="{Binding RemainingDisplay}"
+                           Style="{StaticResource TimerDisplay}"
+                           FontSize="72" />
+
+                    <Label Text="残り時間"
+                           Style="{StaticResource SectionCaption}"
+                           HorizontalOptions="Center"
+                           Opacity="0.85" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- ===== 下段: プリセット + コントロール ===== -->
+            <VerticalStackLayout Grid.Row="2" Spacing="20">
+
+                <FlexLayout Direction="Row"
+                            Wrap="Wrap"
+                            JustifyContent="Center"
+                            AlignItems="Center">
+
+                    <Button Text="5分"
+                            Style="{StaticResource PresetButton}"
+                            Margin="4,0"
+                            Command="{Binding SelectPresetCommand}"
+                            CommandParameter="5">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding SelectedPresetMinutes}"
+                                         Value="5">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="10分"
+                            Style="{StaticResource PresetButton}"
+                            Margin="4,0"
+                            Command="{Binding SelectPresetCommand}"
+                            CommandParameter="10">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding SelectedPresetMinutes}"
+                                         Value="10">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="15分"
+                            Style="{StaticResource PresetButton}"
+                            Margin="4,0"
+                            Command="{Binding SelectPresetCommand}"
+                            CommandParameter="15">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding SelectedPresetMinutes}"
+                                         Value="15">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="20分"
+                            Style="{StaticResource PresetButton}"
+                            Margin="4,0"
+                            Command="{Binding SelectPresetCommand}"
+                            CommandParameter="20">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding SelectedPresetMinutes}"
+                                         Value="20">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="30分"
+                            Style="{StaticResource PresetButton}"
+                            Margin="4,0"
+                            Command="{Binding SelectPresetCommand}"
+                            CommandParameter="30">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding SelectedPresetMinutes}"
+                                         Value="30">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="カスタム"
+                            Style="{StaticResource PresetButton}"
+                            Margin="4,0"
+                            Command="{Binding ToggleCustomModeCommand}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsCustomMode}"
+                                         Value="{x:Boolean True}">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                </FlexLayout>
+
+                <!-- ===== カスタム時間入力パネル ===== -->
+                <Border IsVisible="{Binding IsCustomMode}"
+                        BackgroundColor="{StaticResource BgSurface}"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{StaticResource DividerSoft}"
+                        StrokeThickness="1"
+                        Padding="20,16">
+                    <Grid RowDefinitions="Auto,16,Auto">
+
+                        <Grid Grid.Row="0"
+                              ColumnDefinitions="*,32,*">
+
+                            <!-- 分 -->
+                            <VerticalStackLayout Grid.Column="0" Spacing="8">
+                                <Label Text="分"
+                                       Style="{StaticResource SectionCaption}"
+                                       HorizontalOptions="Center" />
+                                <Grid ColumnDefinitions="44,*,44">
+                                    <Button Grid.Column="0"
+                                            Text="−"
+                                            Style="{StaticResource StepperButton}"
+                                            Command="{Binding DecrMinutesCommand}" />
+                                    <Entry Grid.Column="1"
+                                           Text="{Binding CustomMinuteText, Mode=TwoWay}"
+                                           Keyboard="Numeric"
+                                           HorizontalTextAlignment="Center"
+                                           FontSize="22"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           MaxLength="2" />
+                                    <Button Grid.Column="2"
+                                            Text="＋"
+                                            Style="{StaticResource StepperButton}"
+                                            Command="{Binding IncrMinutesCommand}" />
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- コロン -->
+                            <Label Grid.Column="1"
+                                   Text=":"
+                                   FontSize="28"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   VerticalOptions="End"
+                                   HorizontalOptions="Center"
+                                   Margin="0,0,0,8" />
+
+                            <!-- 秒 -->
+                            <VerticalStackLayout Grid.Column="2" Spacing="8">
+                                <Label Text="秒"
+                                       Style="{StaticResource SectionCaption}"
+                                       HorizontalOptions="Center" />
+                                <Grid ColumnDefinitions="44,*,44">
+                                    <Button Grid.Column="0"
+                                            Text="−"
+                                            Style="{StaticResource StepperButton}"
+                                            Command="{Binding DecrSecondsCommand}" />
+                                    <Entry Grid.Column="1"
+                                           Text="{Binding CustomSecondText, Mode=TwoWay}"
+                                           Keyboard="Numeric"
+                                           HorizontalTextAlignment="Center"
+                                           FontSize="22"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           MaxLength="2" />
+                                    <Button Grid.Column="2"
+                                            Text="＋"
+                                            Style="{StaticResource StepperButton}"
+                                            Command="{Binding IncrSecondsCommand}" />
+                                </Grid>
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                        <Button Grid.Row="2"
+                                Text="セット"
+                                Style="{StaticResource SetButton}"
+                                Command="{Binding SetCustomTimeCommand}"
+                                HorizontalOptions="Fill" />
+
+                    </Grid>
+                </Border>
+
+                <Grid ColumnDefinitions="*,Auto,*"
+                      VerticalOptions="Center">
+
+                    <Button Grid.Column="0"
+                            Text="リセット"
+                            Style="{StaticResource GhostButton}"
+                            HorizontalOptions="End"
+                            Margin="0,0,16,0"
+                            Command="{Binding ResetCommand}" />
+
+                    <Button Grid.Column="1"
+                            Text="{Binding PrimaryButtonText}"
+                            Style="{StaticResource PrimaryCircleButton}"
+                            Command="{Binding StartPauseCommand}"
+                            IsVisible="{Binding IsAlarmActive, Converter={StaticResource InvertedBoolConverter}}" />
+
+                    <!-- アラーム停止ボタン（アラーム鳴動時のみ表示） -->
+                    <Button Grid.Column="1"
+                            Text="アラーム停止"
+                            Style="{StaticResource PrimaryCircleButton}"
+                            BackgroundColor="#E74C3C"
+                            FontSize="14"
+                            Command="{Binding StopAlarmCommand}"
+                            IsVisible="{Binding IsAlarmActive}" />
+
+                    <ContentView Grid.Column="2" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- ===== 最下段: BGM セクション ===== -->
+            <VerticalStackLayout Grid.Row="3" Spacing="10" Margin="0,8,0,0">
+
+                <!-- ヘッダー -->
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0"
+                           Text="BGM"
+                           Style="{StaticResource SectionCaption}"
+                           Margin="4,0,0,0"
+                           VerticalOptions="Center" />
+
+                    <Button Grid.Column="1"
+                            Text="{Binding BgmButtonText}"
+                            Style="{StaticResource PresetButton}"
+                            Command="{Binding ToggleBgmCommand}"
+                            HorizontalOptions="Start"
+                            Padding="10,4">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsBgmPlaying}"
+                                         Value="{x:Boolean True}">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Label Grid.Column="2"
+                           Text="{Binding VolumePercent}"
+                           Style="{StaticResource SectionCaption}"
+                           VerticalOptions="Center" />
+                    <Label Grid.Column="3"
+                           Text="🔊"
+                           FontSize="14"
+                           VerticalOptions="Center"
+                           Margin="0,0,4,0" />
+                </Grid>
+
+                <!-- 音量スライダー -->
+                <Slider Minimum="0"
+                        Maximum="1"
+                        Value="{Binding Volume, Mode=TwoWay}"
+                        Margin="4,0" />
+
+                <!-- カテゴリ切り替えボタン -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button Grid.Column="0"
+                            Text="🌿 環境音"
+                            Style="{StaticResource PresetButton}"
+                            Command="{Binding SelectAmbientCategoryCommand}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsAmbientMode}"
+                                         Value="{x:Boolean True}">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                    <Button Grid.Column="1"
+                            Text="🎵 クラシック"
+                            Style="{StaticResource PresetButton}"
+                            Command="{Binding SelectClassicCategoryCommand}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsClassicMode}"
+                                         Value="{x:Boolean True}">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                </Grid>
+
+                <!-- ===== 環境音リスト（IsAmbientMode=True のとき表示） ===== -->
+                <!-- VisualStateManager の "Selected" で選択中アイテムをハイライトする -->
+                <CollectionView IsVisible="{Binding IsAmbientMode}"
+                                ItemsSource="{Binding AmbientSounds}"
+                                SelectionMode="Single"
+                                SelectedItem="{Binding SelectedAmbientSound, Mode=TwoWay}"
+                                HeightRequest="108">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:AmbientSound">
+                            <Border StrokeShape="RoundRectangle 20"
+                                    StrokeThickness="1"
+                                    Padding="14,10"
+                                    MinimumWidthRequest="96">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroupList>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource BgNavy}" />
+                                                    <Setter Property="Stroke"          Value="{StaticResource DividerSoft}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource AccentDeep}" />
+                                                    <Setter Property="Stroke"          Value="{StaticResource AccentDim}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateGroupList>
+                                </VisualStateManager.VisualStateGroups>
+                                <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                                    <Label Text="{Binding Icon}"
+                                           FontSize="26"
+                                           TextColor="{StaticResource Accent}"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="{Binding DisplayName}"
+                                           FontSize="13"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="{Binding Description}"
+                                           FontSize="10"
+                                           TextColor="{StaticResource TextMuted}"
+                                           HorizontalOptions="Center"
+                                           LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- ===== クラシックプレイリスト（IsClassicMode=True のとき表示） ===== -->
+                <VerticalStackLayout IsVisible="{Binding IsClassicMode}" Spacing="6">
+
+                    <!-- 再生中トラック表示 -->
+                    <Label Text="{Binding NowPlayingText}"
+                           TextColor="{StaticResource Accent}"
+                           FontSize="12"
+                           FontFamily="OpenSansSemibold"
+                           Margin="4,0,0,0" />
+
+                    <!-- シークスライダー（再生中のみ有効） -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6" IsVisible="{Binding IsBgmPlaying}">
+                        <Label Grid.Column="0"
+                               Text="{Binding TrackPositionDisplay}"
+                               Style="{StaticResource SectionCaption}"
+                               VerticalOptions="Center" />
+                        <Slider Grid.Column="1"
+                                Minimum="0"
+                                Maximum="{Binding TrackDuration}"
+                                Value="{Binding TrackPosition, Mode=TwoWay}"
+                                VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="{Binding TrackDurationDisplay}"
+                               Style="{StaticResource SectionCaption}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- トラックリスト（5曲 × 約58px = 290px 確保） -->
+                    <CollectionView ItemsSource="{Binding ClassicTracks}"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedClassicTrack, Mode=TwoWay}"
+                                    HeightRequest="300">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ClassicTrack">
+                                <Border Margin="0,0,0,6"
+                                        Padding="14,12"
+                                        StrokeShape="RoundRectangle 12"
+                                        StrokeThickness="1"
+                                        Stroke="{StaticResource DividerSoft}"
+                                        BackgroundColor="{StaticResource BgNavy}">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding IsCurrentlyPlaying}"
+                                                     Value="{x:Boolean True}">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource AccentDeep}" />
+                                            <Setter Property="Stroke"          Value="{StaticResource AccentDim}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
+                                        <!-- 再生中インジケーター -->
+                                        <Label Grid.Column="0"
+                                               Text="♫"
+                                               FontSize="14"
+                                               TextColor="{StaticResource TextMuted}"
+                                               VerticalOptions="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding IsCurrentlyPlaying}"
+                                                             Value="{x:Boolean True}">
+                                                    <Setter Property="TextColor" Value="{StaticResource Accent}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                        <!-- タイトル + 作曲者 -->
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Title}"
+                                                   FontSize="14"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Label Text="{Binding Composer}"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource TextMuted}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>
