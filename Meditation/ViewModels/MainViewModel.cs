@@ -30,6 +30,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(PrimaryButtonText))]
     private bool _isRunning;
 
+    partial void OnIsRunningChanged(bool value) => UpdateScreenLock();
+
     public string PrimaryButtonText => IsRunning ? "II" : "▶";
 
     // ================================================================
@@ -38,6 +40,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private bool _isAlarmActive;
+
+    partial void OnIsAlarmActiveChanged(bool value) => UpdateScreenLock();
 
     private CancellationTokenSource? _vibrationCts;
 
@@ -468,6 +472,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // ================================================================
     // ヘルパー
     // ================================================================
+
+    private void UpdateScreenLock()
+    {
+        // タイマー動作中、またはアラーム鳴動中のみ画面をオンに維持する
+        bool shouldKeepScreenOn = IsRunning || IsAlarmActive;
+        
+        if (DeviceDisplay.Current.KeepScreenOn != shouldKeepScreenOn)
+        {
+            DeviceDisplay.Current.KeepScreenOn = shouldKeepScreenOn;
+        }
+    }
 
     private static string FormatTime(TimeSpan t)
     {
