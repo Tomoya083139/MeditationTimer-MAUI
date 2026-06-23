@@ -36,6 +36,25 @@ public partial class MainPage : ContentPage
             "OK");
     }
 
+    // ================================================================
+    // シークスライダー イベント
+    // ================================================================
+
+    /// <summary>
+    /// ドラッグ開始：ポーリングを止め、ユーザー操作を優先させる。
+    /// </summary>
+    private void SeekSlider_DragStarted(object sender, EventArgs e)
+        => ViewModel.OnSeekDragStarted();
+
+    /// <summary>
+    /// ドラッグ完了：スライダーの現在値でシークし、ポーリングを再開する。
+    /// </summary>
+    private void SeekSlider_DragCompleted(object sender, EventArgs e)
+    {
+        if (sender is Slider slider)
+            ViewModel.SeekTo(slider.Value);
+    }
+
     protected override void OnDisappearing()
     {
         base.OnDisappearing();

@@ -16,18 +16,17 @@ public enum TimerState
 
 /// <summary>
 /// カウントダウンタイマーのコアロジック。
-/// UI (MainPage / ViewModel) から分離することで、将来的に以下のような拡張が容易になります:
-///   - 瞑想 BGM 再生サービス（IAudioService 等）と連携
-///   - Android 固有の通知サービス（INotificationService）と連携
-///   - ViewModel への組み込み（MVVM 化）
-///   - ユニットテスト（IDispatcher をモック化）
+/// バックグラウンドで動作する System.Timers.Timer を用い、
+/// 実際の経過時間を基準に計算することでミリ秒単位のズレをなくした高精度な実装。
 /// </summary>
-public class CountdownTimerService
+public class CountdownTimerService : IDisposable
 {
     private readonly IDispatcher _dispatcher;
-    private IDispatcherTimer? _timer;
+    private System.Timers.Timer? _timer;
     private TimeSpan _remaining;
     private TimeSpan _duration;
+    private DateTime _startTime;
+    private TimeSpan _remainingAtStart;
 
     public TimerState State { get; private set; } = TimerState.Stopped;
     public TimeSpan Remaining => _remaining;
@@ -66,6 +65,11 @@ public class CountdownTimerService
         if (_remaining <= TimeSpan.Zero)
             return;
 
+        if (State == TimerState.Running) return;
+
+        _startTime = DateTime.UtcNow;
+        _remainingAtStart = _remaining;
+
         EnsureTimer();
         _timer!.Start();
         SetState(TimerState.Running);
@@ -76,13 +80,19 @@ public class CountdownTimerService
     {
         if (State != TimerState.Running) return;
         _timer?.Stop();
+        
+        // 現在の残り時間を経過時間から再計算して保持（精度維持のため）
+        var elapsed = DateTime.UtcNow - _startTime;
+        var remainingCalculated = _remainingAtStart - elapsed;
+        _remaining = remainingCalculated < TimeSpan.Zero ? TimeSpan.Zero : remainingCalculated;
+        
         SetState(TimerState.Paused);
     }
 
     /// <summary>リセット（設定済みの duration に戻す）。</summary>
     public void Reset()
     {
-        _timer?.Stop();
+        StopInternal();
         _remaining = _duration;
         Tick?.Invoke(this, _remaining);
         SetState(TimerState.Stopped);
@@ -92,32 +102,58 @@ public class CountdownTimerService
     {
         if (_timer != null) return;
 
-        _timer = _dispatcher.CreateTimer();
-        _timer.Interval = TimeSpan.FromSeconds(1);
-        _timer.IsRepeating = true;
-        _timer.Tick += OnDispatcherTick;
+        // 100msごとに高精度で時間経過を監視
+        _timer = new System.Timers.Timer(100);
+        _timer.AutoReset = true;
+        _timer.Elapsed += OnTimerElapsed;
     }
 
-    private void OnDispatcherTick(object? sender, EventArgs e)
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
-        _remaining -= TimeSpan.FromSeconds(1);
+        var elapsed = DateTime.UtcNow - _startTime;
+        var newRemaining = _remainingAtStart - elapsed;
 
-        if (_remaining <= TimeSpan.Zero)
+        if (newRemaining <= TimeSpan.Zero)
         {
-            _remaining = TimeSpan.Zero;
-            _timer?.Stop();
-            Tick?.Invoke(this, _remaining);
-            SetState(TimerState.Completed);
-            Completed?.Invoke(this, EventArgs.Empty);
+            newRemaining = TimeSpan.Zero;
+            StopInternal();
+            
+            // UIスレッドで安全に通知を発火
+            _dispatcher.Dispatch(() =>
+            {
+                _remaining = TimeSpan.Zero;
+                Tick?.Invoke(this, _remaining);
+                SetState(TimerState.Completed);
+                Completed?.Invoke(this, EventArgs.Empty);
+            });
             return;
         }
 
-        Tick?.Invoke(this, _remaining);
+        // 秒単位での切り替えが発生したタイミングのみ UI へ通知する
+        if ((int)newRemaining.TotalSeconds != (int)_remaining.TotalSeconds)
+        {
+            _dispatcher.Dispatch(() =>
+            {
+                _remaining = newRemaining;
+                Tick?.Invoke(this, _remaining);
+            });
+        }
+        else
+        {
+            // 秒数は変わっていなくても内部の Remaining は最新に更新しておく
+            _remaining = newRemaining;
+        }
     }
 
     private void StopInternal()
     {
-        _timer?.Stop();
+        if (_timer != null)
+        {
+            _timer.Stop();
+            _timer.Elapsed -= OnTimerElapsed;
+            _timer.Dispose();
+            _timer = null;
+        }
     }
 
     private void SetState(TimerState newState)
@@ -125,5 +161,10 @@ public class CountdownTimerService
         if (State == newState) return;
         State = newState;
         StateChanged?.Invoke(this, newState);
+    }
+
+    public void Dispose()
+    {
+        StopInternal();
     }
 }

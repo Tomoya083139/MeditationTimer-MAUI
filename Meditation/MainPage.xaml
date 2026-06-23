@@ -412,19 +412,25 @@
                            FontFamily="OpenSansSemibold"
                            Margin="4,0,0,0" />
 
-                    <!-- シークスライダー（再生中のみ有効） -->
+                    <!-- シークスライダー（再生中のみ表示） -->
+                    <!-- Value は Mode=OneWay（VM→UI の一方向のみ）。               -->
+                    <!-- ユーザー操作は DragStarted/DragCompleted イベントで拾い、  -->
+                    <!-- SeekTo() を呼ぶことで TwoWay フィードバックループを排除。   -->
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6" IsVisible="{Binding IsBgmPlaying}">
                         <Label Grid.Column="0"
                                Text="{Binding TrackPositionDisplay}"
                                Style="{StaticResource SectionCaption}"
                                VerticalOptions="Center" />
                         <Slider Grid.Column="1"
+                                x:Name="SeekSlider"
                                 Minimum="0"
                                 Maximum="{Binding TrackDuration}"
-                                Value="{Binding TrackPosition, Mode=TwoWay}"
-                                VerticalOptions="Center" />
+                                Value="{Binding TrackPosition, Mode=OneWay}"
+                                VerticalOptions="Center"
+                                DragStarted="SeekSlider_DragStarted"
+                                DragCompleted="SeekSlider_DragCompleted" />
                         <Label Grid.Column="2"
-                               Text="{Binding TrackDurationDisplay}"
+                               Text="{Binding TrackRemainingDisplay}"
                                Style="{StaticResource SectionCaption}"
                                VerticalOptions="Center" />
                     </Grid>

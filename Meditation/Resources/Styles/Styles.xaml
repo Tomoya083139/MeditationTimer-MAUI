@@ -176,6 +176,20 @@
         <Setter Property="Padding" Value="0"/>
     </Style>
 
+    <!-- コンディション評価ボタン（◯ / △ / ✕）-->
+    <Style TargetType="Button" x:Key="ConditionButton">
+        <Setter Property="TextColor"       Value="{StaticResource TextSecondary}"/>
+        <Setter Property="BackgroundColor" Value="{StaticResource BgElevated}"/>
+        <Setter Property="FontSize"        Value="17"/>
+        <Setter Property="BorderWidth"     Value="0"/>
+        <Setter Property="CornerRadius"    Value="10"/>
+        <Setter Property="HeightRequest"   Value="42"/>
+        <Setter Property="WidthRequest"    Value="48"/>
+        <Setter Property="Padding"         Value="0"/>
+        <Setter Property="MinimumHeightRequest" Value="42"/>
+        <Setter Property="MinimumWidthRequest"  Value="48"/>
+    </Style>
+
     <!-- ===== Others ===== -->
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{StaticResource Accent}"/>

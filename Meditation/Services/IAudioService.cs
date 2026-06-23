@@ -14,12 +14,15 @@ public interface IAudioService
     /// <summary>再生中のファイルの総時間（秒）。不明の場合は 0。</summary>
     double Duration { get; }
 
+    /// <summary>再生が終了したときに発生するイベント。ループ再生時は発生しない。</summary>
+    event EventHandler? PlaybackEnded;
+
     /// <summary>
-    /// 指定ファイルをループ再生する。
+    /// 指定ファイルを再生する。
     /// null または空文字を渡すと無音（停止）になる。
     /// <paramref name="volumeScale"/> はグローバル音量への乗数（録音レベル差の補正用）。
     /// </summary>
-    Task PlayAsync(string? assetFileName, double volumeScale = 1.0);
+    Task PlayAsync(string? assetFileName, double volumeScale = 1.0, bool loop = false);
 
     /// <summary>再生を停止する。</summary>
     void Stop();

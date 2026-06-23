@@ -14,6 +14,11 @@ public partial class ClassicTrack : ObservableObject
     public required string AssetFileName { get; init; }
 
     /// <summary>
+    /// 曲の長さ（秒）。
+    /// </summary>
+    public required double DurationSeconds { get; init; }
+
+    /// <summary>
     /// グローバル音量に対する倍率（0.0〜1.0）。
     /// 音源ごとの録音レベル差を補正するために使用。
     /// </summary>

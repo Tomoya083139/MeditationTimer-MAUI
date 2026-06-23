@@ -1,5 +1,6 @@
 ﻿using Meditation.Services;
 using Meditation.ViewModels;
+using Meditation.Views;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.Audio;
 
@@ -22,12 +23,15 @@ namespace Meditation
             builder.Services.AddSingleton<IDispatcher>(services => Application.Current?.Dispatcher ?? throw new InvalidOperationException("Dispatcher not found"));
             builder.Services.AddSingleton<IAudioService, AudioService>();
             builder.Services.AddSingleton<CountdownTimerService>();
+            builder.Services.AddSingleton<IDiaryService, DiaryService>();   // 日記・記録サービス
 
             // ViewModels
             builder.Services.AddTransient<MainViewModel>();
+            builder.Services.AddTransient<CalendarViewModel>();             // カレンダー VM
 
             // Pages
             builder.Services.AddTransient<MainPage>();
+            builder.Services.AddTransient<CalendarPage>();                  // カレンダーページ
 
 #if DEBUG
     		builder.Logging.AddDebug();

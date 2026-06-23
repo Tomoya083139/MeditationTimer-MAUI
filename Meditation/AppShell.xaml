@@ -4,11 +4,21 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Meditation"
-    Title="Meditation">
+    xmlns:views="clr-namespace:Meditation.Views"
+    Title="瞑想タイマー">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <!-- タブバー：タイマー / カレンダー -->
+    <TabBar>
+        <Tab Title="タイマー">
+            <ShellContent
+                Route="MainPage"
+                ContentTemplate="{DataTemplate local:MainPage}" />
+        </Tab>
 
+        <Tab Title="カレンダー">
+            <ShellContent
+                Route="CalendarPage"
+                ContentTemplate="{DataTemplate views:CalendarPage}" />
+        </Tab>
+    </TabBar>
 </Shell>

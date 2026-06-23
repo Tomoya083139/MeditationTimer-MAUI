@@ -10,8 +10,10 @@
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- bool 値を反転させるコンバーター（IsAlarmActive が true のときにコントロールを隠す用） -->
-            <local:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+            <!-- bool 値を反転させるコンバーター -->
+            <local:InvertedBoolConverter      x:Key="InvertedBoolConverter" />
+            <!-- 文字列が空でない場合に true を返すコンバーター（保存ステータス表示用） -->
+            <local:StringNotEmptyConverter    x:Key="StringNotEmptyConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

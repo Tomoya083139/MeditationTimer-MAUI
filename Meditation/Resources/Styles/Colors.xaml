@@ -19,6 +19,7 @@
 
     <!-- Accent -->
     <Color x:Key="Accent">#7FB8B2</Color>
+    <Color x:Key="Danger">#E57373</Color>   <!-- コンディション"悪い"ボタン用 -->
     <Color x:Key="AccentDim">#4C7E79</Color>
     <Color x:Key="AccentDeep">#2F4F4A</Color>
     <Color x:Key="AccentWarm">#C9A66B</Color>

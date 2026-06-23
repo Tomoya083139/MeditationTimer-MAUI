@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Meditation.ViewModels"
+             xmlns:models="clr-namespace:Meditation.Models"
+             x:Class="Meditation.Views.CalendarPage"
+             x:Name="CalendarPageRoot"
+             x:DataType="vm:CalendarViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource BgDeepNavy}">
+
+    <ScrollView VerticalScrollBarVisibility="Default">
+        <VerticalStackLayout Spacing="0">
+            <!-- 入力欄以外をタップしたらキーボードを閉じる -->
+            <VerticalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBackgroundTapped" />
+            </VerticalStackLayout.GestureRecognizers>
+
+            <!-- ===== アプリタイトル ===== -->
+            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" Padding="0,28,0,12">
+                <Label Text="RECORD"
+                       Style="{StaticResource SectionCaption}"
+                       HorizontalOptions="Center"
+                       TextColor="{StaticResource Accent}" />
+                <Label Text="習慣と気持ちの記録"
+                       Style="{StaticResource SubHeadline}"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- ===== 月ナビゲーション ===== -->
+            <Grid ColumnDefinitions="56,*,56" Padding="12,4,12,8">
+                <Button Grid.Column="0"
+                        Text="‹"
+                        FontSize="22"
+                        Style="{StaticResource GhostButton}"
+                        Padding="0"
+                        HeightRequest="44" WidthRequest="44"
+                        Command="{Binding PreviousMonthCommand}" />
+                <Label Grid.Column="1"
+                       Text="{Binding MonthTitle}"
+                       FontSize="18"
+                       FontFamily="OpenSansSemibold"
+                       TextColor="{StaticResource TextPrimary}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+                <Button Grid.Column="2"
+                        Text="›"
+                        FontSize="22"
+                        Style="{StaticResource GhostButton}"
+                        Padding="0"
+                        HeightRequest="44" WidthRequest="44"
+                        Command="{Binding NextMonthCommand}" />
+            </Grid>
+
+            <!-- ===== 曜日ヘッダー（月〜日）===== -->
+            <Grid ColumnDefinitions="*,*,*,*,*,*,*" Padding="6,0" Margin="0,0,0,4">
+                <Label Grid.Column="0" Text="月" FontSize="12" TextColor="{StaticResource TextMuted}" HorizontalOptions="Center" />
+                <Label Grid.Column="1" Text="火" FontSize="12" TextColor="{StaticResource TextMuted}" HorizontalOptions="Center" />
+                <Label Grid.Column="2" Text="水" FontSize="12" TextColor="{StaticResource TextMuted}" HorizontalOptions="Center" />
+                <Label Grid.Column="3" Text="木" FontSize="12" TextColor="{StaticResource TextMuted}" HorizontalOptions="Center" />
+                <Label Grid.Column="4" Text="金" FontSize="12" TextColor="{StaticResource TextMuted}" HorizontalOptions="Center" />
+                <Label Grid.Column="5" Text="土" FontSize="12" TextColor="{StaticResource AccentWarm}" HorizontalOptions="Center" />
+                <Label Grid.Column="6" Text="日" FontSize="12" TextColor="{StaticResource Accent}"    HorizontalOptions="Center" />
+            </Grid>
+
+            <!-- ===== カレンダーグリッド（6週×7列=42セル）===== -->
+            <CollectionView ItemsSource="{Binding DayCells}"
+                            SelectionMode="None"
+                            HeightRequest="282"
+                            Margin="4,0,4,8">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="7"
+                                     HorizontalItemSpacing="2" VerticalItemSpacing="2" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:CalendarDayCell">
+                        <Grid HeightRequest="38" Margin="1">
+
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    x:DataType="{x:Null}"
+                                    Command="{Binding Source={x:Reference CalendarPageRoot}, Path=BindingContext.SelectDayCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+
+                            <!-- 選択背景楕円 -->
+                            <Ellipse WidthRequest="34" HeightRequest="34"
+                                     Fill="{StaticResource AccentDeep}"
+                                     HorizontalOptions="Center" VerticalOptions="Center"
+                                     IsVisible="{Binding IsSelected}" />
+
+                            <!-- 今日のリング -->
+                            <Ellipse WidthRequest="34" HeightRequest="34"
+                                     Stroke="{StaticResource Accent}" StrokeThickness="1.5"
+                                     Fill="Transparent"
+                                     HorizontalOptions="Center" VerticalOptions="Center"
+                                     IsVisible="{Binding IsToday}" />
+
+                            <!-- 日付ラベル -->
+                            <Label Text="{Binding DayText}"
+                                   FontSize="14" FontFamily="OpenSansSemibold"
+                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                   Margin="0,0,0,6">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding IsCurrentMonth}" Value="False">
+                                        <Setter Property="Opacity" Value="0.25" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding IsToday}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource Accent}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+                                        <Setter Property="Opacity"   Value="1.0" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+
+                            <!-- 瞑想済みドット -->
+                            <Ellipse WidthRequest="5" HeightRequest="5"
+                                     Fill="{StaticResource Accent}"
+                                     HorizontalOptions="Center" VerticalOptions="End"
+                                     Margin="0,0,0,2"
+                                     IsVisible="{Binding HasMeditation}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ===== 区切り線 ===== -->
+            <BoxView HeightRequest="1" Color="{StaticResource DividerSoft}" Margin="16,4,16,16" />
+
+            <!-- ===== 詳細パネル（日付タップで表示）===== -->
+            <VerticalStackLayout IsVisible="{Binding IsDetailVisible}"
+                                 Padding="16,0,16,40" Spacing="16">
+
+                <!-- 日付タイトル + 瞑想ステータス -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding SelectedDateTitle}"
+                           FontSize="17" FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource TextPrimary}" />
+                    <Label Text="{Binding MeditationStatusText}"
+                           FontSize="13" TextColor="{StaticResource Accent}"
+                           IsVisible="{Binding SelectedDayHasMeditation}" />
+                    <Label Text="瞑想の記録はありません"
+                           FontSize="12" TextColor="{StaticResource TextMuted}"
+                           IsVisible="{Binding SelectedDayHasMeditation, Converter={StaticResource InvertedBoolConverter}}" />
+                </VerticalStackLayout>
+
+                <!-- ── コンディション評価 ── -->
+                <Border BackgroundColor="{StaticResource BgSurface}"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="{StaticResource DividerSoft}" StrokeThickness="1"
+                        Padding="16,14">
+                    <VerticalStackLayout Spacing="14">
+
+                        <Label Text="コンディション" Style="{StaticResource SectionCaption}" />
+
+                        <!-- 朝 -->
+                        <Grid ColumnDefinitions="32,*,Auto,Auto,Auto" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="朝" FontSize="14"
+                                   TextColor="{StaticResource TextSecondary}" VerticalOptions="Center" />
+                            <Button Grid.Column="2" Text="◯"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetMorningConditionCommand}" CommandParameter="Good">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsMorningGood}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Grid.Column="3" Text="△"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetMorningConditionCommand}" CommandParameter="Normal">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsMorningNormal}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource AccentWarm}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Grid.Column="4" Text="✕"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetMorningConditionCommand}" CommandParameter="Bad">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsMorningBad}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </Grid>
+
+                        <!-- 昼 -->
+                        <Grid ColumnDefinitions="32,*,Auto,Auto,Auto" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="昼" FontSize="14"
+                                   TextColor="{StaticResource TextSecondary}" VerticalOptions="Center" />
+                            <Button Grid.Column="2" Text="◯"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetNoonConditionCommand}" CommandParameter="Good">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsNoonGood}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Grid.Column="3" Text="△"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetNoonConditionCommand}" CommandParameter="Normal">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsNoonNormal}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource AccentWarm}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Grid.Column="4" Text="✕"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetNoonConditionCommand}" CommandParameter="Bad">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsNoonBad}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </Grid>
+
+                        <!-- 夜 -->
+                        <Grid ColumnDefinitions="32,*,Auto,Auto,Auto" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="夜" FontSize="14"
+                                   TextColor="{StaticResource TextSecondary}" VerticalOptions="Center" />
+                            <Button Grid.Column="2" Text="◯"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetEveningConditionCommand}" CommandParameter="Good">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsEveningGood}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Grid.Column="3" Text="△"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetEveningConditionCommand}" CommandParameter="Normal">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsEveningNormal}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource AccentWarm}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button Grid.Column="4" Text="✕"
+                                    Style="{StaticResource ConditionButton}"
+                                    Command="{Binding SetEveningConditionCommand}" CommandParameter="Bad">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button"
+                                                 Binding="{Binding IsEveningBad}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+                                        <Setter Property="TextColor"       Value="{StaticResource TextOnAccent}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── 日記・メモ ── -->
+                <Border BackgroundColor="{StaticResource BgSurface}"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="{StaticResource DividerSoft}" StrokeThickness="1"
+                        Padding="16,14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="日記・メモ" Style="{StaticResource SectionCaption}" />
+                        <Editor x:Name="DiaryEditor"
+                                Text="{Binding DiaryText, Mode=TwoWay}"
+                                Placeholder="今日の気づきや感想を書いてください…"
+                                PlaceholderColor="{StaticResource TextMuted}"
+                                TextColor="{StaticResource TextPrimary}"
+                                BackgroundColor="Transparent"
+                                FontSize="14"
+                                MinimumHeightRequest="100"
+                                AutoSize="TextChanges" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── 保存ボタン ── -->
+                <Button Text="保存する"
+                        Style="{StaticResource SetButton}"
+                        HeightRequest="52"
+                        Command="{Binding SaveRecordCommand}" />
+
+                <Label Text="{Binding SaveStatus}"
+                       FontSize="13"
+                       TextColor="{StaticResource Accent}"
+                       HorizontalOptions="Center"
+                       IsVisible="{Binding SaveStatus, Converter={StaticResource StringNotEmptyConverter}}" />
+
+            </VerticalStackLayout>
+
+            <!-- 詳細非表示時プレースホルダー -->
+            <Label Text="日付をタップして記録を表示"
+                   FontSize="14" TextColor="{StaticResource TextMuted}"
+                   HorizontalOptions="Center"
+                   Margin="0,16,0,48"
+                   IsVisible="{Binding IsDetailVisible, Converter={StaticResource InvertedBoolConverter}}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

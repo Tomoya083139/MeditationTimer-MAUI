@@ -15,6 +15,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly CountdownTimerService _timer;
     private readonly IAudioService _audioService;
     private readonly IDispatcher _dispatcher;
+    private readonly IDiaryService _diaryService;
 
     // ================================================================
     // タイマー状態
@@ -123,8 +124,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<AmbientSound> AmbientSounds { get; } = new()
     {
         new AmbientSound { Key = "none",  DisplayName = "無音", Icon = "◯", Description = "静寂を楽しむ",                              VolumeScale = 1.0  },
-        new AmbientSound { Key = "rain",  DisplayName = "雨",   Icon = "☂", Description = "静かな雨音",   AssetFileName = "rain.mp3",  VolumeScale = 0.75 },
-        new AmbientSound { Key = "waves", DisplayName = "波",   Icon = "〜", Description = "穏やかな海",   AssetFileName = "wave.mp3",  VolumeScale = 0.80 },
+        new AmbientSound { Key = "rain",  DisplayName = "雨",   Icon = "☂", Description = "静かな雨音",   AssetFileName = "rain.mp3",  VolumeScale = 1.0  },
+        new AmbientSound { Key = "waves", DisplayName = "波",   Icon = "〜", Description = "穏やかな海",   AssetFileName = "wave.mp3",  VolumeScale = 1.0  },
     };
 
     [ObservableProperty]
@@ -132,6 +133,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedAmbientSoundChanged(AmbientSound? value)
     {
+        if (value is not null)
+        {
+            IsClassicMode = false; // 明示的に環境音モードにする
+        }
         IsBgmPlaying = !string.IsNullOrEmpty(value?.AssetFileName);
         PlayAudio(value?.AssetFileName, value?.VolumeScale ?? 1.0);
     }
@@ -142,11 +147,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<ClassicTrack> ClassicTracks { get; } = new()
     {
-        new ClassicTrack { Key = "canon",           Title = "カノン",              Composer = "パッヘルベル",     AssetFileName = "Canon.mp3",                                                                         VolumeScale = 0.90 },
-        new ClassicTrack { Key = "chopin_etude",    Title = "別れの曲 Op.10 No.3", Composer = "ショパン",         AssetFileName = "04 - Chopin - Etude in E Major, Op. 10, No. 3.mp3",                               VolumeScale = 1.00 },
-        new ClassicTrack { Key = "chopin_nocturne", Title = "夜想曲 Op.9 No.2",    Composer = "ショパン",         AssetFileName = "Chopin_Nocturne_No.04_in_EfM_Op.9_2_SDRodrian.mp3",                               VolumeScale = 1.00 },
-        new ClassicTrack { Key = "debussy_clair",   Title = "月の光",              Composer = "ドビュッシー",     AssetFileName = "saturn-3-music-claire-de-lune-debussy-piano-411227.mp3",                           VolumeScale = 1.00 },
-        new ClassicTrack { Key = "tchaiko_waltz",   Title = "花のワルツ",          Composer = "チャイコフスキー", AssetFileName = "(19) [Tchaikovsky] The Nutcracker- Act 2- No. 13 Waltz of the Flowers.mp3",         VolumeScale = 0.80 },
+        new ClassicTrack { Key = "canon",           Title = "カノン",              Composer = "パッヘルベル",     AssetFileName = "Canon.mp3",                                                                         DurationSeconds = 286.0, VolumeScale = 1.00 },
+        new ClassicTrack { Key = "chopin_etude",    Title = "別れの曲 Op.10 No.3", Composer = "ショパン",         AssetFileName = "04 - Chopin - Etude in E Major, Op. 10, No. 3.mp3",                               DurationSeconds = 266.0, VolumeScale = 1.00 },
+        new ClassicTrack { Key = "chopin_nocturne", Title = "夜想曲 Op.9 No.2",    Composer = "ショパン",         AssetFileName = "Chopin_Nocturne_No.04_in_EfM_Op.9_2_SDRodrian.mp3",                               DurationSeconds = 179.0, VolumeScale = 1.00 },
+        new ClassicTrack { Key = "debussy_clair",   Title = "月の光",              Composer = "ドビュッシー",     AssetFileName = "saturn-3-music-claire-de-lune-debussy-piano-411227.mp3",                           DurationSeconds = 285.0, VolumeScale = 1.00 },
+        new ClassicTrack { Key = "tchaiko_waltz",   Title = "花のワルツ",          Composer = "チャイコフスキー", AssetFileName = "(19) [Tchaikovsky] The Nutcracker- Act 2- No. 13 Waltz of the Flowers.mp3",         DurationSeconds = 386.0, VolumeScale = 0.95 },
     };
 
     [ObservableProperty]
@@ -158,6 +163,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         UpdateClassicPlayingStates();
         if (value is not null)
         {
+            IsClassicMode = true; // 明示的にクラシックモードにする
             IsBgmPlaying = true;
             PlayAudio(value.AssetFileName, value.VolumeScale);
         }
@@ -202,7 +208,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VolumePercent))]
-    private double _volume = 0.45;
+    private double _volume = 0.7;
 
     partial void OnVolumeChanged(double value)
     {
@@ -216,23 +222,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // ================================================================
 
     private IDispatcherTimer? _positionTimer;
-    private bool _isInternalPositionUpdate;
+    /// <summary>ユーザーがシークバーをドラッグ中は true。ポーリング更新を停止する。</summary>
+    private bool _isDragging;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TrackPositionDisplay))]
+    [NotifyPropertyChangedFor(nameof(TrackRemainingDisplay))]
     private double _trackPosition;
-
-    partial void OnTrackPositionChanged(double value)
-    {
-        if (!_isInternalPositionUpdate && IsBgmPlaying)
-            _audioService.Seek(value);
-    }
+    // ※ シークは OnSeekDragStarted / SeekTo 経由でのみ行う（TwoWay バインドなし）
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TrackRemainingDisplay))]
     private double _trackDuration = 1.0;
 
     public string TrackPositionDisplay => FormatTime(TimeSpan.FromSeconds(TrackPosition));
     public string TrackDurationDisplay => FormatTime(TimeSpan.FromSeconds(Math.Max(TrackDuration, 0)));
+    public string TrackRemainingDisplay => "-" + FormatTime(TimeSpan.FromSeconds(Math.Max(0.0, TrackDuration - TrackPosition)));
 
     private void StartPositionPolling()
     {
@@ -251,30 +256,67 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void StopPositionPolling()
     {
         _positionTimer?.Stop();
-        _isInternalPositionUpdate = true;
+        _isDragging   = false;
         TrackPosition = 0;
         TrackDuration = 1.0;
-        _isInternalPositionUpdate = false;
     }
 
     private void OnPositionTick(object? sender, EventArgs e)
     {
-        _isInternalPositionUpdate = true;
-        
+        // ユーザーがシークバーをドラッグ中はポーリングを完全スキップ。
+        if (_isDragging) return;
+
         double current = _audioService.CurrentPosition;
-        double duration = _audioService.Duration;
 
-        // シークバーのループ対応: 
-        // 1. duration（曲の長さ）を常に更新
-        if (duration > 0.5) TrackDuration = duration;
+        if (IsClassicMode && SelectedClassicTrack != null)
+        {
+            TrackDuration = SelectedClassicTrack.DurationSeconds;
 
-        // 2. 現在位置を更新
-        TrackPosition = current;
+            // 再生中で、現在の秒数が 1.0秒 以上経過しており、曲の残り時間が 0.8秒 以下（または終端到達）になった場合に
+            // 自動的に次の曲を再生する（Android等における PlaybackEnded イベント不発対策のフォールバック）
+            if (IsBgmPlaying && current > 1.0 && (TrackDuration - current <= 0.8 || current >= TrackDuration))
+            {
+                // 次の曲へ切り替える前に、タイマー（ポーリング）を明示的に一度止めてリソース競合を防ぐ
+                StopPositionPolling();
+                PlayNextClassicTrack();
+                return;
+            }
+        }
+        else
+        {
+            double duration = _audioService.Duration;
+            if (duration > 0.5)
+                TrackDuration = duration;
+        }
 
-        // 補足: Plugin.Maui.Audio はループ時に自動的に CurrentPosition が 0 に戻るため、
-        // 特殊なリセット処理を書かなくても current をそのまま代入するだけで 0 に戻ります。
-        
-        _isInternalPositionUpdate = false;
+        // ループ後やロード直後に CurrentPosition が Duration をわずかに超える場合にクランプして
+        // Slider.Maximum オーバーによる表示崩れを防ぐ
+        TrackPosition = Math.Clamp(current, 0.0, TrackDuration);
+    }
+
+    // ================================================================
+    // シーク（DragStarted / DragCompleted から呼ばれる）
+    // ================================================================
+
+    /// <summary>
+    /// シークバーのドラッグ開始時に Page から呼ぶ。
+    /// ポーリング更新を止めてスライダー操作を優先させる。
+    /// </summary>
+    public void OnSeekDragStarted() => _isDragging = true;
+
+    /// <summary>
+    /// シークバーのドラッグ完了時に Page から呼ぶ。
+    /// <paramref name="positionSeconds"/> の位置にシークして、ポーリングを再開する。
+    /// </summary>
+    public void SeekTo(double positionSeconds)
+    {
+        _isDragging = false;
+        if (IsBgmPlaying)
+        {
+            _audioService.Seek(positionSeconds);
+            // シーク完了直後につまみの位置を即時更新し、ポーリング待機によるガタつきを防ぐ（最適化）
+            TrackPosition = positionSeconds;
+        }
     }
 
     // ================================================================
@@ -283,7 +325,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void PlayAudio(string? file, double scale)
     {
-        _audioService.PlayAsync(file, scale);
+        _audioService.PlayAsync(file, scale, !IsClassicMode);
         if (!string.IsNullOrEmpty(file))
             StartPositionPolling();
         else
@@ -423,17 +465,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // コンストラクタ
     // ================================================================
 
-    public MainViewModel(CountdownTimerService timer, IAudioService audioService, IDispatcher dispatcher)
+    public MainViewModel(CountdownTimerService timer, IAudioService audioService, IDispatcher dispatcher, IDiaryService diaryService)
     {
         _timer        = timer;
         _audioService = audioService;
         _dispatcher   = dispatcher;
+        _diaryService = diaryService;
 
         _audioService.Volume = _volume;
 
         _timer.Tick         += OnTimerTick;
         _timer.StateChanged += OnTimerStateChanged;
         _timer.Completed    += OnTimerCompleted;
+
+        _audioService.PlaybackEnded += OnAudioPlaybackEnded;
 
         _timer.SetDuration(TimeSpan.FromMinutes(SelectedPresetMinutes));
 
@@ -449,10 +494,44 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void OnTimerCompleted(object? sender, EventArgs e)
     {
+        // 瞑想完了をカレンダーに記録する（fire-and-forget）
+        _ = _diaryService.RecordMeditationAsync(DateTime.Today, _timer.Duration);
+
         // 継続的なバイブレーションを開始
-        StartPersistentVibrationAsync();
-        
+        _ = StartPersistentVibrationAsync();
+
         TimerCompleted?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnAudioPlaybackEnded(object? sender, EventArgs e)
+    {
+        _dispatcher.Dispatch(() =>
+        {
+            if (IsClassicMode)
+            {
+                PlayNextClassicTrack();
+            }
+        });
+    }
+
+    private void PlayNextClassicTrack()
+    {
+        if (ClassicTracks.Count == 0) return;
+
+        int currentIndex = SelectedClassicTrack != null ? ClassicTracks.IndexOf(SelectedClassicTrack) : -1;
+        int nextIndex = currentIndex + 1;
+
+        if (nextIndex < ClassicTracks.Count)
+        {
+            SelectedClassicTrack = ClassicTracks[nextIndex];
+        }
+        else
+        {
+            // 最後の曲が終了した場合は再生を停止する
+            SelectedClassicTrack = null;
+            IsBgmPlaying = false;
+            StopAudio();
+        }
     }
 
     // ================================================================
@@ -464,9 +543,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _timer.Tick         -= OnTimerTick;
         _timer.StateChanged -= OnTimerStateChanged;
         _timer.Completed    -= OnTimerCompleted;
+        _audioService.PlaybackEnded -= OnAudioPlaybackEnded;
         StopAudio();
-        _positionTimer?.Stop();
+        if (_positionTimer is not null)
+        {
+            _positionTimer.Stop();
+            _positionTimer.Tick -= OnPositionTick;
+            _positionTimer = null;
+        }
         _vibrationCts?.Cancel();
+        _vibrationCts?.Dispose();
+        _vibrationCts = null;
     }
 
     // ================================================================
